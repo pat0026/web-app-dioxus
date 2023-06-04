@@ -10,6 +10,8 @@ fn main() {
     dioxus_web::launch(App);
     // dioxus_desktop::launch(App);
 }
+#[derive(Clone, Copy)]
+struct LoginStatus(bool);
 
 fn App(cx: Scope) -> Element {    
     // States  
@@ -17,6 +19,8 @@ fn App(cx: Scope) -> Element {
     let done_items = use_state(cx, || String::new());
     let pending_items_count = use_state(cx, || 0);
     let done_items_count = use_state(cx, || 0);
+    use_shared_state_provider(cx, || LoginStatus(false));
+    let login_status_context = use_shared_state::<LoginStatus>(cx).unwrap();
     // let test_fut = use_future!(cx, || async {
     //     let client = reqwest::Client::new();
     //     client.get("http://127.0.0.1:8000/v1/item/get")
@@ -60,10 +64,36 @@ fn App(cx: Scope) -> Element {
     // })
     console_log::init_with_level(Level::Debug);
     info!("It works");
-    cx.render(rsx!(
-        div { class: "App",
-            div { class: "mainContainer", LoginForm {} }
-        }
-    ))
+    let login = |v: String| {
+        info!("{}", v)
+    };
+
+    if login_status_context.read().0 {
+        cx.render( rsx!(
+            div { class: "App",
+                div { class: "mainContainer", 
+                    button {"Hello"} }
+            }
+        ))
+    } else {
+        cx.render( rsx!(
+            div { class: "App",
+                div { class: "mainContainer", 
+                    LoginForm {} }
+            }
+        ))
+    }
+
+    // cx.render(rsx!(
+    //     div { class: "App",
+    //         div { class: "mainContainer", 
+    //             if login_status_context.read().0 {
+    //                 div {"Hello"}
+    //             } else {
+    //                 div {"Hi"}
+    //             } 
+    //         }
+    //     }
+    // ))
 
 }
