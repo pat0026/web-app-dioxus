@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
-use dioxus::prelude::*;
 use components::login_form::LoginForm;
-use log::Level;
-use log::info;
+use dioxus::prelude::*;
+use gloo::storage::{LocalStorage, Storage};
+use log::{info, Level};
 
 mod components;
 
@@ -13,8 +13,8 @@ fn main() {
 #[derive(Clone, Copy)]
 struct LoginStatus(bool);
 
-fn App(cx: Scope) -> Element {    
-    // States  
+fn App(cx: Scope) -> Element {
+    // States
     let pending_items = use_state(cx, || String::new());
     let done_items = use_state(cx, || String::new());
     let pending_items_count = use_state(cx, || 0);
@@ -64,21 +64,49 @@ fn App(cx: Scope) -> Element {
     // })
     console_log::init_with_level(Level::Debug);
     info!("It works");
-    let login = |v: String| {
-        info!("{}", v)
+    let login = |v: String| info!("{}", v);
+    
+    let handle_returned_state = |response| {
+        
     };
 
+    let get_items = || {
+
+    };
+
+    let check_login = |_| {
+        info!("Checking");
+        let token = LocalStorage::get::<String>("token");
+
+        match token {
+            Ok(value) => {
+                login_status_context.write().0 = true;
+                get_items();
+            },
+            Err(err) => ()
+        }
+
+    };
+
+    // login_status_context.write().0 = true;
     if login_status_context.read().0 {
-        cx.render( rsx!(
+        cx.render(rsx!(
             div { class: "App",
-                div { class: "mainContainer", 
-                    button {"Hello"} }
+                div { class: "mainContainer",
+                    div { class: "header",
+                        p { "Complete tasks: {done_items_count}"}
+                        p { "Complete tasks: {pending_items_count}"}
+                    },
+                    h1 {"Pending Items"}
+                    h1 {"Done Items"}
+                }
             }
         ))
     } else {
-        cx.render( rsx!(
+        cx.render(rsx!(
             div { class: "App",
-                div { class: "mainContainer", 
+                onmounted: check_login,
+                div { class: "mainContainer",
                     LoginForm {} }
             }
         ))
@@ -86,14 +114,13 @@ fn App(cx: Scope) -> Element {
 
     // cx.render(rsx!(
     //     div { class: "App",
-    //         div { class: "mainContainer", 
+    //         div { class: "mainContainer",
     //             if login_status_context.read().0 {
     //                 div {"Hello"}
     //             } else {
     //                 div {"Hi"}
-    //             } 
+    //             }
     //         }
     //     }
     // ))
-
 }
